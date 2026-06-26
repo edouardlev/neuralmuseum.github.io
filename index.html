@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Academic digital art exhibition showcasing Mario Klingemann's neural network experiments, GAN architectures, and autonomous identity.">
+  <title>The Neural Museum: Mario Klingemann & Autonomous Identity</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Space+Grotesk:wght@300;400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome for UI Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    /* ==========================================================================
+       DESIGN SYSTEM & CSS VARIABLES (EERIE / LIMINAL THEME - HIGH CONTRAST)
+       ========================================================================== */
+    :root {
+      --bg-color: #070806;       /* Claustrophobic damp concrete dark */
+      --accent: #8ee300;         /* Sickly fluorescent phosphor green */
+      --accent-dim: rgba(142, 227, 0, 0.25);
+      --text-main: #ffffff;      /* High contrast crisp white */
+      --text-muted: #a8ad9f;     /* Light slate green-gray for clear reading */
+      --border-color: #1e221b;
+      
+      --font-tech: 'Space Grotesk', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      
+      --transition-slow: 1s cubic-bezier(0.16, 1, 0.3, 1);
+      --transition-med: 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* ==========================================================================
+       BASE RESET & GLOBAL STYLES
+       ========================================================================== */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      font-family: var(--font-body);
+      overflow: hidden;
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Vignette overlay for claustrophobic Backrooms shadow */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle, transparent 35%, rgba(0, 0, 0, 0.88) 100%);
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    /* Subtle grid representing network matrix */
+    body::after {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: 
+        linear-gradient(rgba(142, 227, 0, 0.007) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(142, 227, 0, 0.007) 1px, transparent 1px);
+      background-size: 60px 60px;
+      background-position: center center;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* ==========================================================================
+       SCROLL SNAPPING CONTAINER
+       ========================================================================== */
+    .gallery-container {
+      width: 100vw;
+      height: 100vh;
+      overflow-y: scroll;
+      scroll-snap-type: y mandatory;
+      scroll-behavior: smooth;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* ==========================================================================
+       INDIVIDUAL SLIDE SYSTEM
+       ========================================================================== */
+    .slide {
+      width: 100vw;
+      height: 100vh;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
+      display: flex;
+      position: relative;
+      overflow: hidden;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    /* ==========================================================================
+       SLIDE 1: TITLE / LANDING
+       ========================================================================== */
+    .title-slide {
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 4rem;
+      text-align: center;
+    }
+
+    .title-content {
+      max-width: 900px;
+    }
+
+    .title-tagline {
+      font-family: var(--font-tech);
+      font-size: 0.9rem;
+      letter-spacing: 0.5em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 2rem;
+    }
+
+    .exhibition-title {
+      font-family: var(--font-tech);
+      font-size: clamp(2.8rem, 6vw, 4.8rem);
+      font-weight: 500;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      text-transform: uppercase;
+      color: #fff;
+      margin-bottom: 1.5rem;
+      text-shadow: 0 0 10px rgba(142, 227, 0, 0.2);
+      animation: fluorescent-flicker 10s infinite alternate;
+    }
+
+    .exhibition-artist {
+      font-family: var(--font-tech);
+      font-size: clamp(1.1rem, 2.2vw, 1.6rem);
+      letter-spacing: 0.18em;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 3.5rem;
+      font-weight: 500;
+    }
+
+    .enter-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      background: transparent;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      padding: 0.9rem 2.5rem;
+      font-family: var(--font-tech);
+      font-weight: 500;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all var(--transition-med);
+      box-shadow: 0 0 10px rgba(142, 227, 0, 0.15);
+    }
+
+    .enter-btn:hover {
+      background: var(--accent);
+      color: var(--bg-color);
+      box-shadow: 0 0 20px var(--accent);
+      transform: translateY(-2px);
+    }
+
+    .curator-credit {
+      font-family: var(--font-tech);
+      font-size: 0.75rem;
+      letter-spacing: 0.25em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-top: 2rem;
+    }
+
+    .scroll-indicator {
+      position: absolute;
+      bottom: 3rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: var(--font-tech);
+      font-size: 0.7rem;
+      letter-spacing: 0.35em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      animation: hum-fade 4s infinite ease-in-out;
+    }
+
+    /* ==========================================================================
+       STANDARD SLIDE SPLIT LAYOUT (VISUAL ARTWORKS)
+       ========================================================================== */
+    .visual-slide {
+      display: flex;
+      flex-direction: row;
+      align-items: stretch;
+      width: 100%;
+      height: 100vh;
+    }
+
+    /* Left Column: Media (70%) */
+    .media-column {
+      flex: 0 0 70%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 5rem 6rem;
+      background-color: #030403;
+      position: relative;
+    }
+
+    .media-container {
+      width: 100%;
+      height: 100%;
+      max-height: 560px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      border: 1px solid var(--border-color);
+      background-color: #000;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9);
+      transition: border-color var(--transition-slow);
+    }
+
+    .visual-slide.active .media-container {
+      border-color: var(--accent-dim);
+    }
+
+    .visual-slide[data-room="perception"].active .media-container {
+      border-color: var(--accent-dim);
+      box-shadow: 0 0 35px rgba(142, 227, 0, 0.12);
+    }
+
+    .visual-slide[data-room="memory"].active .media-container {
+      border-color: rgba(255, 20, 147, 0.25);
+      box-shadow: 0 0 35px rgba(255, 20, 147, 0.12);
+    }
+
+    .visual-slide[data-room="imagination"].active .media-container {
+      border-color: rgba(0, 229, 255, 0.25);
+      box-shadow: 0 0 35px rgba(0, 229, 255, 0.12);
+    }
+
+    .artwork-wrapper {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* Retain original size proportions and resolution without cropping */
+    .artwork-img {
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      z-index: 2;
+    }
+
+    /* Right Column: Caption (30%) */
+    .caption-column {
+      flex: 0 0 30%;
+      background-color: var(--bg-color);
+      border-left: 1px solid var(--border-color);
+      padding: 5rem 4rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+    }
+
+    .caption-content {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      justify-content: space-between;
+      max-width: 420px;
+    }
+
+    .room-indicator {
+      font-family: var(--font-tech);
+      font-size: 0.7rem;
+      letter-spacing: 0.25em;
+      color: var(--accent);
+      margin-bottom: 2rem;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+
+    .room-indicator.room-2 {
+      color: #ff1493; /* Hot Pink */
+      text-shadow: 0 0 6px rgba(255, 20, 147, 0.15);
+    }
+
+    .room-indicator.room-3 {
+      color: #00e5ff; /* Hot Blue */
+      text-shadow: 0 0 6px rgba(0, 229, 255, 0.15);
+    }
+
+    .caption-content h3 {
+      font-family: var(--font-tech);
+      font-size: clamp(1.3rem, 1.8vw, 1.6rem);
+      font-weight: 500;
+      line-height: 1.35;
+      color: #fff;
+      margin-bottom: 2rem;
+      letter-spacing: -0.01em;
+      opacity: 0;
+      transform: translateY(15px);
+      transition: opacity var(--transition-slow) 0.1s, transform var(--transition-slow) 0.1s;
+    }
+
+    .visual-slide.active h3 {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .analysis {
+      font-size: 0.98rem;
+      line-height: 1.7;
+      color: #e5e7eb; /* Light stone gray for high contrast legibility */
+      margin-bottom: 3rem;
+      opacity: 0;
+      transform: translateY(15px);
+      transition: opacity var(--transition-slow) 0.2s, transform var(--transition-slow) 0.2s;
+    }
+
+    .visual-slide.active .analysis {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Footer inside caption */
+    .slide-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: auto;
+      border-top: 1px solid var(--border-color);
+      padding-top: 2rem;
+    }
+
+    .slide-num {
+      font-family: var(--font-tech);
+      font-size: 0.85rem;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+    }
+
+    /* ==========================================================================
+       SIMPLE TEXT-ONLY SLIDE LAYOUT (INTRO / CONCLUSION / SOURCES)
+       ========================================================================== */
+    .simple-text-slide {
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 4rem;
+      background-color: #030403;
+      text-align: center;
+    }
+
+    .simple-text-content {
+      max-width: 900px;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity var(--transition-slow) 0.1s, transform var(--transition-slow) 0.1s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+
+    .simple-text-slide.active .simple-text-content {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .simple-slide-title {
+      font-family: var(--font-tech);
+      font-size: 0.85rem;
+      letter-spacing: 0.35em;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 2rem;
+    }
+
+    .simple-slide-body {
+      font-family: var(--font-body);
+      font-size: clamp(1.2rem, 2.2vw, 1.8rem);
+      line-height: 1.6;
+      color: #ffffff;
+      font-weight: 300;
+    }
+
+    .slide-footer-simple {
+      position: absolute;
+      bottom: 3rem;
+      font-family: var(--font-tech);
+      font-size: 0.85rem;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+    }
+
+    /* ==========================================================================
+       RETRO FLOPPY DISK GRID LAYOUT (CREATIVE SOURCES SLIDE)
+       ========================================================================== */
+    .sources-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 3rem;
+      width: 100%;
+      margin-top: 1.5rem;
+    }
+
+    /* Pure CSS 3.5" Floppy Disk Design */
+    .floppy-disk {
+      width: 250px;
+      height: 250px;
+      background: #151813;
+      border: 1px solid var(--border-color);
+      position: relative;
+      border-radius: 6px 20px 6px 6px; /* Trimmed top-right corner */
+      padding: 0.8rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all var(--transition-med);
+      cursor: pointer;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+      user-select: none;
+    }
+
+    /* Metal Shutter at the top */
+    .shutter {
+      position: absolute;
+      top: 0;
+      left: 55px;
+      width: 65px;
+      height: 40px;
+      background: #252a1f;
+      border: 1px solid var(--border-color);
+      border-top: none;
+      border-radius: 0 0 3px 3px;
+      z-index: 5;
+    }
+
+    /* Sliding slot on metal shutter */
+    .shutter::before {
+      content: "";
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      width: 12px;
+      height: 15px;
+      background: #070806;
+      border-radius: 1px;
+    }
+
+    /* Floppy write-protect window bottom-right */
+    .floppy-write-protect {
+      position: absolute;
+      bottom: 12px;
+      right: 12px;
+      width: 14px;
+      height: 14px;
+      background: #000;
+      border-radius: 2px;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    /* Floppy notch bottom-left */
+    .floppy-disk::before {
+      content: "";
+      position: absolute;
+      bottom: 12px;
+      left: 12px;
+      width: 14px;
+      height: 14px;
+      background: #000;
+      border-radius: 2px;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    /* Paper Adhesive Label on Floppy */
+    .floppy-label {
+      background: #f1f5f9;
+      color: #0f172a;
+      padding: 0.8rem 1rem;
+      border-radius: 3px;
+      margin-top: 45px;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      text-align: left;
+      box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+      border-top: 5px solid var(--accent);
+      z-index: 4;
+      transition: background var(--transition-med);
+    }
+
+    .label-header {
+      font-family: var(--font-tech);
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.12em;
+      border-bottom: 1px solid #cbd5e1;
+      padding-bottom: 2px;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+    }
+
+    .floppy-label p {
+      font-family: var(--font-body);
+      font-size: 0.76rem;
+      line-height: 1.4;
+      color: #334155;
+    }
+
+    .floppy-label p strong {
+      color: #0f172a;
+    }
+
+    .floppy-label a {
+      color: #1e3a8a;
+      text-decoration: underline;
+      font-weight: 500;
+      word-break: break-all;
+    }
+
+    .floppy-label a:hover {
+      color: #000000;
+    }
+
+    /* Micro hover animation */
+    .floppy-disk:hover {
+      transform: translateY(-12px) rotate(2deg);
+      border-color: var(--accent);
+      box-shadow: 0 15px 35px rgba(142, 227, 0, 0.2);
+    }
+
+    .floppy-disk:hover .floppy-label {
+      background: #ffffff;
+    }
+
+    .system-disclaimer {
+      font-family: var(--font-tech);
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+      margin-top: 3.5rem;
+      max-width: 800px;
+      line-height: 1.5;
+      text-transform: uppercase;
+      opacity: 0.65;
+    }
+
+    /* ==========================================================================
+       SUPER MINIMALIST FLOATING TIMELINE DOTS (FAR RIGHT ONLY)
+       ========================================================================== */
+    .sidebar-nav {
+      position: fixed;
+      right: 1.5rem;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 100;
+    }
+
+    .nav-links {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.4rem;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      width: 16px;
+      height: 16px;
+      justify-content: center;
+    }
+
+    .nav-dot {
+      width: 5px;
+      height: 5px;
+      background-color: var(--border-color);
+      border-radius: 50%;
+      transition: all var(--transition-med);
+    }
+
+    .nav-item:hover .nav-dot {
+      background-color: var(--text-muted);
+      transform: scale(1.5);
+    }
+
+    /* Active state indicator (glowing server rack indicator look) */
+    .nav-item.active .nav-dot {
+      background-color: var(--accent);
+      transform: scale(1.8);
+      box-shadow: 0 0 8px var(--accent);
+    }
+
+    /* Active navigation dot glows matching the room color */
+    .nav-item.active[data-target="slide-6"] .nav-dot,
+    .nav-item.active[data-target="slide-7"] .nav-dot,
+    .nav-item.active[data-target="slide-8"] .nav-dot {
+      background-color: #ff1493;
+      box-shadow: 0 0 8px #ff1493;
+    }
+
+    .nav-item.active[data-target="slide-9"] .nav-dot,
+    .nav-item.active[data-target="slide-10"] .nav-dot {
+      background-color: #00e5ff;
+      box-shadow: 0 0 8px #00e5ff;
+    }
+
+    /* Hover states matching the room color */
+    .nav-item[data-target="slide-6"]:hover .nav-dot,
+    .nav-item[data-target="slide-7"]:hover .nav-dot,
+    .nav-item[data-target="slide-8"]:hover .nav-dot {
+      background-color: rgba(255, 20, 147, 0.6);
+    }
+
+    .nav-item[data-target="slide-9"]:hover .nav-dot,
+    .nav-item[data-target="slide-10"]:hover .nav-dot {
+      background-color: rgba(0, 229, 255, 0.6);
+    }
+
+    /* ==========================================================================
+       KEYFRAMES ANIMATIONS
+       ========================================================================== */
+    @keyframes fluorescent-flicker {
+      0%, 19.999%, 22%, 62.999%, 64%, 64.999%, 70%, 100% {
+        opacity: 0.99;
+        text-shadow: 0 0 10px rgba(142, 227, 0, 0.2);
+      }
+      20%, 21.999%, 63%, 63.999%, 65%, 69.999% {
+        opacity: 0.35;
+        text-shadow: none;
+      }
+    }
+
+    @keyframes hum-fade {
+      0%, 100% { opacity: 0.35; }
+      50% { opacity: 0.75; }
+    }
+
+    @keyframes rec-blink {
+      0% { opacity: 0.2; }
+      100% { opacity: 1; }
+    }
+
+    /* ==========================================================================
+       RESPONSIVE ADJUSTMENTS
+       ========================================================================== */
+    @media (max-width: 1400px) {
+      .media-column {
+        padding: 4rem 5rem;
+      }
+      .caption-column {
+        padding: 4rem 3rem;
+      }
+    }
+
+    @media (max-width: 1100px) {
+      .gallery-container {
+        scroll-snap-type: none;
+        overflow-y: auto;
+      }
+      .slide {
+        height: auto;
+        min-height: 100vh;
+        flex-direction: column;
+      }
+      .media-column {
+        width: 100%;
+        padding: 4rem 3rem 2rem 3rem;
+      }
+      .media-container {
+        height: 400px;
+      }
+      .caption-column {
+        width: 100%;
+        padding: 2rem 3rem 4rem 3rem;
+        border-left: none;
+        border-top: 1px solid var(--border-color);
+      }
+      .caption-content {
+        max-width: 100%;
+      }
+      .sidebar-nav {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Right Sidebar: Timeline Navigation Dots -->
+  <nav class="sidebar-nav">
+    <ul class="nav-links">
+      <li class="nav-item active" data-target="slide-1" onclick="scrollToSlide(1)"><span class="nav-dot"></span></li>
+      <li class="nav-item" data-target="slide-2" onclick="scrollToSlide(2)"><span class="nav-dot"></span></li>
+      <li class="nav-item" data-target="slide-3" onclick="scrollToSlide(3)"><span class="nav-dot"></span></li>
+      <li class="nav-item" data-target="slide-4" onclick="scrollToSlide(4)"><span class="nav-dot"></span></li>
+      <li class="nav-item" data-target="slide-5" onclick="scrollToSlide(5)"><span class="nav-dot"></span></li>
+      <li class="nav-item" data-target="slide-6" onclick="scrollToSlide(6)"><span class="nav-dot"></span></li>
+      <li class="nav-item" data-target="slide-7" onclick="scrollToSlide(7)"><span class="nav-dot"></span></li>
+      <li class="nav-item" data-target="slide-8" onclick="scrollToSlide(8)"><span class="nav-dot"></span></li>
+      <li class="nav-item" data-target="slide-9" onclick="scrollToSlide(9)"><span class="nav-dot"></span></li>
+      <li class="nav-item" data-target="slide-10" onclick="scrollToSlide(10)"><span class="nav-dot"></span></li>
+      <li class="nav-item" data-target="slide-11" onclick="scrollToSlide(11)"><span class="nav-dot"></span></li>
+      <li class="nav-item" data-target="slide-12" onclick="scrollToSlide(12)"><span class="nav-dot"></span></li>
+    </ul>
+  </nav>
+
+  <!-- Gallery Snap Container -->
+  <div class="gallery-container" id="gallery-container">
+
+    <!-- SLIDE 1: TYPOGRAPHIC ENTRANCE PORTAL -->
+    <section class="slide title-slide" id="slide-1">
+      <div class="title-content">
+        <div class="title-tagline">MAAC3114 Final Project</div>
+        <h1 class="exhibition-title">THE NEURAL MUSEUM</h1>
+        <p class="exhibition-artist">Featuring Mario Klingemann</p>
+        <button class="enter-btn" onclick="scrollToSlide(2)">
+          Enter <i class="fas fa-arrow-right"></i>
+        </button>
+        <div class="curator-credit">by Edouard Levesque</div>
+      </div>
+      <div class="scroll-indicator">
+        <span>Awaiting Input // Scroll</span>
+      </div>
+    </section>
+
+    <!-- SLIDE 2: EXHIBITION INTRODUCTION (IMAGE-FREE & SIMPLE) -->
+    <section class="slide simple-text-slide" id="slide-2">
+      <div class="simple-text-content">
+        <h2 class="simple-slide-title">Introduction</h2>
+        <p class="simple-slide-body">
+          This museum will take you through some of Mario Klingemann’s different techniques for creating AI-generated art. Instead of attempting to make art look as good as possible as many artists do, Mario eases into and highlights what makes a GAN imperfect…
+        </p>
+      </div>
+      <div class="slide-footer-simple">
+        <span class="slide-num">02 / 12</span>
+      </div>
+    </section>
+
+    <!-- SLIDE 3: IMAGE 1 - NEURAL GLITCH -->
+    <section class="slide visual-slide" id="slide-3" data-room="perception">
+      <div class="media-column">
+        <div class="media-container">
+          <div class="artwork-wrapper">
+            <img src="new_images/01%20-%20Neural%20Glitch_Mistaken%20Identity.png" alt="Neural Glitch" class="artwork-img">
+          </div>
+        </div>
+      </div>
+      <div class="caption-column">
+        <div class="caption-content">
+        <div class="room-indicator">ROOM 01 // PERCEPTION GLITCH</div>
+          <h3>Neural Glitch</h3>
+          <p class="analysis">
+            This is one of the examples where Mario modifies the parameters of GANs, introducing corruption into model weights, or adding in random input data (Górska, 2025).
+          </p>
+          <div class="slide-footer">
+            <span class="slide-num">03 / 12</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 4: IMAGE 2 - NEURAL DECAY -->
+    <section class="slide visual-slide" id="slide-4" data-room="perception">
+      <div class="media-column">
+        <div class="media-container">
+          <div class="artwork-wrapper">
+            <img src="new_images/02%20-%20Neural%20Decay.jpg" alt="Neural decay" class="artwork-img">
+          </div>
+        </div>
+      </div>
+      <div class="caption-column">
+        <div class="caption-content">
+        <div class="room-indicator">ROOM 01 // PERCEPTION GLITCH</div>
+          <h3>Neural Decay</h3>
+          <p class="analysis">
+            This change in the models causes the systems to lose consistent logic, leading to images with clear, imperfect patterns (Górska, 2025). We can see the face seems pixelated and made up of features that don’t seem human-like (Górska, 2025). Klingemann described the art pieces as “a dialogue with a machine that tries to repair itself” (quoted in Górska, 2025).
+          </p>
+          <div class="slide-footer">
+            <span class="slide-num">04 / 12</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 5: IMAGE 3 - UNCANNEY GLITCH -->
+    <section class="slide visual-slide" id="slide-5" data-room="perception">
+      <div class="media-column">
+        <div class="media-container">
+          <div class="artwork-wrapper">
+            <img src="new_images/03%20-%20uncanny%20glitch.png" alt="Uncanny Glitch" class="artwork-img">
+          </div>
+        </div>
+      </div>
+      <div class="caption-column">
+        <div class="caption-content">
+        <div class="room-indicator">ROOM 01 // PERCEPTION GLITCH</div>
+          <h3>Uncanny Glitch</h3>
+          <p class="analysis">
+            We can see how uncanny these generated images become (Górska, 2025). The generated faces do not seem to be quite human, but the machine making them simply does not know better… (Górska, 2025).
+          </p>
+          <div class="slide-footer">
+            <span class="slide-num">05 / 12</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 6: IMAGE 4 - MEMORIES OF PASSERSBY I -->
+    <section class="slide visual-slide" id="slide-6" data-room="memory">
+      <div class="media-column">
+        <div class="media-container">
+          <div class="artwork-wrapper">
+            <img src="new_images/04%20-%20Memories%20of%20a%20Passerby.jpg" alt="Memories of Passersby I" class="artwork-img">
+          </div>
+        </div>
+      </div>
+      <div class="caption-column">
+        <div class="caption-content">
+        <div class="room-indicator room-2">ROOM 02 // MEMORY SIMULATION</div>
+          <h3>Memories of Passersby I</h3>
+          <p class="analysis">
+            This art collection by Klingemann was unique from his previous pieces; it was trained on paintings from the 17th–19th centuries and would create images in an infinite loop of subtly deformed images (Górska, 2025). It works by having two displays hooked up to a computer designed to look like a chestnut wood console, which runs the model (Górska, 2025).
+          </p>
+          <div class="slide-footer">
+            <span class="slide-num">06 / 12</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 7: IMAGE 5 - MEMORIES OF PASSERSBY GIF -->
+    <section class="slide visual-slide" id="slide-7" data-room="memory">
+      <div class="media-column">
+        <div class="media-container">
+          <div class="artwork-wrapper">
+            <img src="new_images/05%20-%20passersby%20gif.gif" alt="Memories of Passersby GIF" class="artwork-img">
+          </div>
+        </div>
+      </div>
+      <div class="caption-column">
+        <div class="caption-content">
+          <div class="room-indicator room-2">ROOM 02 // MEMORY SIMULATION</div>
+          <h3>Memories of Passersby GIF</h3>
+          <p class="analysis">
+            This project’s intention is to mimic how someone remembers a face. All of these images are created without human intervention and are meant to leave the viewer feeling slightly uneasy (Górska, 2025).
+          </p>
+          <div class="slide-footer">
+            <span class="slide-num">07 / 12</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 8: IMAGE 6 - AUTONOMY & AUTHORSHIP -->
+    <section class="slide visual-slide" id="slide-8" data-room="memory">
+      <div class="media-column">
+        <div class="media-container">
+          <div class="artwork-wrapper">
+            <img src="new_images/06%20-%20passersby%20alt.jpg" alt="Autonomy & Authorship" class="artwork-img">
+          </div>
+        </div>
+      </div>
+      <div class="caption-column">
+        <div class="caption-content">
+          <div class="room-indicator room-2">ROOM 02 // MEMORY SIMULATION</div>
+          <h3>Autonomy & Authorship</h3>
+          <p class="analysis">
+            As Mario sees the usage of AI as a creative partner, it makes one wonder when the art continues being created yet no human remains in the equation; is Mario still the artist in all of this? It would be plausible to see the actual art being the model, and the presentation of the infinite loop of images, rather than the images themselves being the art, or at least only being one piece of the art. This style of art seems to have many moving variables, and makes it hard to be concrete (Górska, 2025).
+          </p>
+          <div class="slide-footer">
+            <span class="slide-num">08 / 12</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 9: IMAGE 7 - DO NOT KILL THE MESSENGER -->
+    <section class="slide visual-slide" id="slide-9" data-room="imagination">
+      <div class="media-column">
+        <div class="media-container">
+          <div class="artwork-wrapper">
+            <img src="new_images/07%20-%20do_not_kill_the_messenger.jpg" alt="do not kill the messenger" class="artwork-img">
+          </div>
+        </div>
+      </div>
+      <div class="caption-column">
+        <div class="caption-content">
+          <div class="room-indicator room-3">ROOM 03 // THE IMPOSTURE SERIES</div>
+          <h3>do not kill the messenger</h3>
+          <p class="analysis">
+            In this project, Klingemann trained his models on simplified silhouettes (stick figures) (Górska, 2025). The idea for this project is to show how a machine “constructs and deforms physicality” (quoted in Górska, 2025). Klingemann created over 50,000 different deformed and incomplete photos of humans devoid of identity (Górska, 2025).
+          </p>
+          <div class="slide-footer">
+            <span class="slide-num">09 / 12</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 10: IMAGE 8 - THE BUTCHER'S SON (SPECIAL EDITION) -->
+    <section class="slide visual-slide" id="slide-10" data-room="imagination">
+      <div class="media-column">
+        <div class="media-container">
+          <div class="artwork-wrapper">
+            <img src="new_images/08%20-%20butchersson.jpeg" alt="The butcher’s son (special edition)" class="artwork-img">
+          </div>
+        </div>
+      </div>
+      <div class="caption-column">
+        <div class="caption-content">
+          <div class="room-indicator room-3">ROOM 03 // THE IMPOSTURE SERIES</div>
+          <h3>The butcher’s son (special edition)</h3>
+          <p class="analysis">
+            Mario’s transhancement style works by hallucinating each detail, layer by layer, which ends up exaggerating the image’s own features and ends up with the images seen here.
+          </p>
+          <div class="slide-footer">
+            <span class="slide-num">10 / 12</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 11: EXHIBITION CONCLUSION (IMAGE-FREE & SIMPLE) -->
+    <section class="slide simple-text-slide" id="slide-11">
+      <div class="simple-text-content">
+        <h2 class="simple-slide-title">Conclusion</h2>
+        <p class="simple-slide-body">
+          To conclude, this virtual museum’s goal was to present the different ways that AI can be embraced as a co-creator when making art. Mario completely ignores the traditional rules of art when making his work, which is what makes it so evocative. With all the opposition to AI in recent times, will his vision continue to hold true?
+        </p>
+      </div>
+      <div class="slide-footer-simple">
+        <span class="slide-num">11 / 12</span>
+      </div>
+    </section>
+
+    <!-- SLIDE 12: SOURCES & METADATA (IMAGE-FREE & FLOOPY RETRO ARCHIVES) -->
+    <section class="slide simple-text-slide" id="slide-12">
+      <div class="simple-text-content">
+        <h2 class="simple-slide-title">System Archives // Sources</h2>
+        
+        <div class="sources-grid">
+          <!-- Card 1: Academic Reference Floppy Disk -->
+          <div class="floppy-disk" onclick="window.open('https://orcid.org/0000-0001-5766-0921', '_blank')" title="Double click / Tap to open ORCID">
+            <div class="shutter"></div>
+            <div class="floppy-label">
+              <span class="label-header">ACADEMIC.SYS</span>
+              <p>
+                <strong>Magdalena Górska</strong><br>
+                Institute of Art History<br>
+                University of Lodz
+              </p>
+              <p style="font-size: 0.72rem; line-height: 1.4; color: #475569; margin-top: 4px;">
+                <em>"Artificial Intelligence, Glitch, and the Unmaking of Identity..."</em>
+              </p>
+              <p style="font-size: 0.65rem; color: #1e3a8a; margin-top: auto;">
+                ORCID: 0000-0001-5766-0921
+              </p>
+            </div>
+            <div class="floppy-write-protect"></div>
+          </div>
+
+          <!-- Card 2: Artistic Reference Floppy Disk -->
+          <div class="floppy-disk" onclick="window.open('https://fellowship.xyz/artwork/0x2c373272f281ce7060e6bb1d5736785081ff9cc3/11', '_blank')" title="Double click / Tap to open Exhibit">
+            <div class="shutter"></div>
+            <div class="floppy-label">
+              <span class="label-header">ARTWORK.EXE</span>
+              <p>
+                <strong>Mario Klingemann</strong><br>
+                Latent portraits and infinite loop records on Fellowship.
+              </p>
+              <p style="font-size: 0.72rem; color: #1e3a8a; margin-top: auto;">
+                LINK: fellowship.xyz/artwork
+              </p>
+            </div>
+            <div class="floppy-write-protect"></div>
+          </div>
+
+          <!-- Card 3: Engineering Agent Floppy Disk -->
+          <div class="floppy-disk" title="Exhibition Core Code Engine">
+            <div class="shutter"></div>
+            <div class="floppy-label">
+              <span class="label-header">ASSISTANT.COM</span>
+              <p>
+                <strong>Google Antigravity</strong><br>
+                Design architecture and responsive timeline coding.
+              </p>
+              <p style="font-size: 0.72rem; color: #475569; margin-top: auto;">
+                Aesthetic: CCTV / Backrooms
+              </p>
+            </div>
+            <div class="floppy-write-protect"></div>
+          </div>
+        </div>
+
+        <div class="system-disclaimer">
+          [ Even though the website was created with the help of AI, all writings were created by me (Edouard Levesque). ]
+        </div>
+
+      </div>
+      <div class="slide-footer-simple">
+        <span class="slide-num">12 / 12</span>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- JavaScript Functionality -->
+  <script>
+    /* ==========================================================================
+       INTERACTIVE SCROLL SNAPPING CONTROLLER
+       ========================================================================== */
+    const container = document.getElementById('gallery-container');
+    const slides = document.querySelectorAll('.slide');
+    const navItems = document.querySelectorAll('.nav-item');
+
+    function scrollToSlide(slideIndex) {
+      const targetId = `slide-${slideIndex}`;
+      const targetSlide = document.getElementById(targetId);
+      if (targetSlide) {
+        targetSlide.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+
+    // Scroll active tracking via Intersection Observer API
+    const observerOptions = {
+      root: container,
+      rootMargin: '0px',
+      threshold: 0.5 // Lock active status when 50% of the slide is in view
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const slideId = entry.target.id;
+          
+          // Set active slide styling
+          slides.forEach(s => s.classList.remove('active'));
+          entry.target.classList.add('active');
+
+          // Update active timeline dot navigation
+          navItems.forEach((nav, idx) => {
+            if (idx === parseInt(slideId.split('-')[1]) - 1) {
+              nav.classList.add('active');
+            } else {
+              nav.classList.remove('active');
+            }
+          });
+        }
+      });
+    }, observerOptions);
+
+    slides.forEach(slide => {
+      observer.observe(slide);
+    });
+  </script>
+</body>
+</html>
